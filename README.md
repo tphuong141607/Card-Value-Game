@@ -41,3 +41,4 @@ This Card Value game has 2 players -- the computer and the user. The program fir
 3. Run the program
 
 Note: `CardValueGame.pro` file is in YesCode-Card-Value-Game/CardValueGame/CardValueGame.pro
+CardValueGamescript file includes all other files' information and how to do a sample run on terminal
