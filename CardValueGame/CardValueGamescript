@@ -1,0 +1,356 @@
+Script started on Mon May  7 04:26:57 2018
+[?1034hbash-3.2$ cat card.h
+#ifndef CARD_H
+#define CARD_H
+
+#include <QString>
+#include <QStringList>
+
+class Card {
+    public:
+        Card();
+        Card(int faceNbr, int suitNbr);
+        QString getFace();
+        QString getSuit();
+        int getValue();
+        QString toString();
+
+    private:
+        int m_FaceNbr;
+        int m_SuitNbr;
+        static QStringList s_Faces;
+        static QStringList s_Suits;
+};
+
+#endif // CARD_H
+bash-3.2$ cat card.cpp
+#include "card.h"
+
+/* Note: Ace = 1, J = 11, Q = 12, K = 13 */
+QStringList Card::s_Faces = QStringList()
+        << "Ace" << "2" << "3" << "4"
+        << "5" << "6" << "7" << "8"
+        << "9" << "10" << "J" << "Q"<< "K";
+
+/* Note: Heart = 1, Clubs = 2, Spades = 3, Diamond = 4 */
+QStringList Card::s_Suits = QStringList()
+        << "Heart" << "Clubs" << "Spades" << "Diamond";
+
+Card::Card()
+    : m_FaceNbr(0), m_SuitNbr(0) {}
+
+Card::Card(int faceNbr, int suitNbr)
+    : m_FaceNbr(faceNbr), m_SuitNbr(suitNbr) {}
+
+QString Card::getFace() {
+    switch(m_FaceNbr) {
+        case 1: return s_Faces.at(0);
+            break;
+        case 2: return s_Faces.at(1);
+            break;
+        case 3: return s_Faces.at(2);
+            break;
+        case 4: return s_Faces.at(3);
+            break;
+        case 5: return s_Faces.at(4);
+            break;
+        case 6: return s_Faces.at(5);
+            break;
+        case 7: return s_Faces.at(6);
+            break;
+        case 8: return s_Faces.at(7);
+            break;
+        case 9: return s_Faces.at(8);
+            break;
+        case 10: return s_Faces.at(9);
+            break;
+        case 11: return s_Faces.at(10); // J
+            break;
+        case 12: return s_Faces.at(11); // Q
+            break;
+        case 13: return s_Faces.at(12); // K
+            break;
+        default : return QString("No Available Face Found");
+    }
+}
+
+QString Card::getSuit() {
+    switch(m_SuitNbr) {
+        case 1: return s_Suits.at(0);
+            break;
+        case 2: return s_Suits.at(1);
+            break;
+        case 3: return s_Suits.at(2);
+            break;
+        case 4: return s_Suits.at(3);
+            break;
+        default : return QString("No Available Suit Found");
+    }
+}
+
+/*  the rules of the game of bridge:
+ * Ace = 4, King = 3, Queen = 2, Jack = 1
+ * all other cards have 0 value */
+int Card::getValue() {
+    switch(m_FaceNbr) {
+        case 1: return 4;
+            break;
+        case 11: return 1;
+            break;
+        case 12: return 2;
+            break;
+        case 13: return 3;
+            break;
+        default : return 0;
+    }
+}
+
+QString Card::toString() {
+    return QString("%1 of %2").arg(getSuit()).arg(getFace());
+}
+bash-3.2$ cat card.[Khan[K[K[Kdeck.h
+#ifndef CARDDECK_H
+#define CARDDECK_H
+
+#include "card.h"
+#include "cardhand.h"
+#include <QString>
+#include <QList>
+
+class CardDeck : public QList <Card*> {
+    public:
+        CardDeck();
+        CardHand deal(int handSize);
+        QString toString();
+        int getCardsLeft();
+        void restoreDeck();
+};
+
+#endif // CARDDECK_H
+bash-3.2$ catc[K card[K[K[K[K[K[K[K[Kcat carddeck.cpp
+#include "carddeck.h"
+#include <QTextStream>
+
+QTextStream cout(stdout);
+
+static int const SUIT_NUM = 4;
+static int const FACE_NUM = 13;
+
+CardDeck::CardDeck() {
+    restoreDeck();
+}
+
+void CardDeck::restoreDeck() {
+    if(!isEmpty()) {
+        qDeleteAll(*this);
+        clear();
+    }
+    for(int suit = 1; suit <= SUIT_NUM; suit++) {
+        for(int face = 1; face <= FACE_NUM; face++) {
+            append(new Card(face, suit));
+        }
+    }
+}
+
+CardHand CardDeck::deal(int handSize) {
+    int randCard;
+    CardHand *hand = new CardHand();
+
+    for(int i = 0; i < handSize; i++) {
+            srand(time(NULL));
+            randCard = rand() % (this->size()-i);
+            hand->append(this->at(randCard));
+            this->removeAt(randCard);
+        }
+    return *hand;
+}
+
+QString CardDeck::toString() {
+    QString result;
+    for(Card *card : *this) {
+        result.append(card->toString() + "\n ");
+    }
+    return result;
+}
+
+int CardDeck::getCardsLeft() {
+    return size()-1;
+}
+
+
+bash-3.2$ cat cardhand.h
+#ifndef CARDHAND_H
+#define CARDHAND_H
+
+#include <QString>
+#include <QList>
+#include <card.h>
+
+class CardHand : public QList <Card*> {
+    public:
+        CardHand();
+        int getValue();
+        QString toString();
+};
+
+#endif // CARDHAND_H
+bash-3.2$ catc[K cardhand.cpp
+#include "cardhand.h"
+
+CardHand::CardHand() {}
+
+int CardHand::getValue() {
+    int value = 0;
+    for(Card *card : *this) {
+        value += card->getValue();
+    }
+    return value;
+}
+
+QString CardHand::toString() {
+    QString str("\n");
+    for (Card *card : *this) {
+          str.append(card->toString());
+          str.append("\n");
+    }
+    return str;
+}
+bash-3.2$ cat hw05.pro
+TEMPLATE = app
+TEMPLATE += QWidgets
+
+CONFIG += c++11 console
+CONFIG -= app_bundle
+
+# The following define makes your compiler emit warnings if you use
+# any feature of Qt which as been marked deprecated (the exact warnings
+# depend on your compiler). Please consult the documentation of the
+# deprecated API in order to know how to port your code away from it.
+DEFINES += QT_DEPRECATED_WARNINGS
+
+# You can also make your code fail to compile if you use deprecated APIs.
+# In order to do so, uncomment the following line.
+# You can also select to disable deprecated APIs only up to a certain version of Qt.
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+
+SOURCES += \
+        main.cpp \
+    carddeck.cpp \
+    card.cpp \
+    cardhand.cpp
+
+HEADERS += \
+    carddeck.h \
+    card.h \
+    cardhand.h
+bash-3.2$ qmake
+bash-3.2$ make
+clang++ -c -pipe -stdlib=libc++ -mmacosx-version-min=10.7 -O2 -arch x86_64 -Wall -W -DQT_DEPRECATED_WARNINGS -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED -I/usr/local/Cellar/qt@4/4.8.7_3/etc/qt4/mkspecs/unsupported/macx-clang-libc++ -I. -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtCore.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtCore.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtGui.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtGui.framework/Versions/4/Headers -I/usr/local/include -I. -F/usr/local/lib -o main.o main.cpp
+clang++ -c -pipe -stdlib=libc++ -mmacosx-version-min=10.7 -O2 -arch x86_64 -Wall -W -DQT_DEPRECATED_WARNINGS -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED -I/usr/local/Cellar/qt@4/4.8.7_3/etc/qt4/mkspecs/unsupported/macx-clang-libc++ -I. -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtCore.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtCore.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtGui.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtGui.framework/Versions/4/Headers -I/usr/local/include -I. -F/usr/local/lib -o carddeck.o carddeck.cpp
+[1mcarddeck.cpp:40:20: [0m[0;1;35mwarning: [0m[1mrange-based for loop is a C++11 extension
+      [-Wc++11-extensions][0m
+    for(Card *card : *this) {
+[0;1;32m                   ^
+[0m1 warning generated.
+clang++ -c -pipe -stdlib=libc++ -mmacosx-version-min=10.7 -O2 -arch x86_64 -Wall -W -DQT_DEPRECATED_WARNINGS -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED -I/usr/local/Cellar/qt@4/4.8.7_3/etc/qt4/mkspecs/unsupported/macx-clang-libc++ -I. -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtCore.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtCore.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtGui.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtGui.framework/Versions/4/Headers -I/usr/local/include -I. -F/usr/local/lib -o card.o card.cpp
+clang++ -c -pipe -stdlib=libc++ -mmacosx-version-min=10.7 -O2 -arch x86_64 -Wall -W -DQT_DEPRECATED_WARNINGS -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED -I/usr/local/Cellar/qt@4/4.8.7_3/etc/qt4/mkspecs/unsupported/macx-clang-libc++ -I. -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtCore.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtCore.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtGui.framework/Versions/4/Headers -I/usr/local/Cellar/qt@4/4.8.7_3/lib/QtGui.framework/Versions/4/Headers -I/usr/local/include -I. -F/usr/local/lib -o cardhand.o cardhand.cpp
+[1mcardhand.cpp:7:20: [0m[0;1;35mwarning: [0m[1mrange-based for loop is a C++11 extension
+      [-Wc++11-extensions][0m
+    for(Card *card : *this) {
+[0;1;32m                   ^
+[0m[1mcardhand.cpp:15:21: [0m[0;1;35mwarning: [0m[1mrange-based for loop is a C++11 extension
+      [-Wc++11-extensions][0m
+    for (Card *card : *this) {
+[0;1;32m                    ^
+[0m2 warnings generated.
+clang++ -headerpad_max_install_names -stdlib=libc++ -mmacosx-version-min=10.7 -arch x86_64 -o hw05 main.o carddeck.o card.o cardhand.o   -F/usr/local/lib -L/usr/local/lib -framework QtGui -L/usr/local/opt/openssl/lib -L/usr/local/Cellar/qt@4/4.8.7_3/lib -F/usr/local/Cellar/qt@4/4.8.7_3/lib -framework QtCore 
+bash-3.2$ ./hw05 
+How many cards in a hand? 2018-05-07 04:28:02.301 hw05
+Here is your hand:
+
+Spades of 9
+Diamond of 7
+Heart of 3
+Spades of 6
+Diamond of 8
+Heart of 4
+Spades of K
+Heart of Ace
+Spades of 4
+
+Your score is: 7 points.
+Here is my hand:
+
+Heart of Q
+Spades of 7
+Heart of K
+Spades of J
+Clubs of 2
+Spades of Ace
+Clubs of 9
+Spades of 3
+Clubs of Ace
+
+My score is: 14 points.
+I win!!
+2018-05-07 04:28:03.771 hw05
+Here is your hand:
+
+Diamond of 7
+Heart of 2
+Heart of J
+Heart of 3
+Diamond of 6
+Heart of K
+Heart of 4
+Clubs of 4
+Spades of 2
+
+Your score is: 4 points.
+Here is my hand:
+
+Heart of 6
+Spades of 6
+Heart of Q
+Diamond of 10
+Clubs of Q
+Diamond of 3
+Spades of 5
+Clubs of 2
+Spades of 9
+
+My score is: 4 points.
+I win!!
+2018-05-07 04:28:04.738 hw05
+Here is your hand:
+
+Heart of 5
+Heart of 10
+Clubs of 6
+Clubs of 9
+Diamond of 6
+Clubs of 7
+Heart of J
+Spades of 3
+Clubs of 10
+
+Your score is: 1 points.
+Here is my hand:
+
+Diamond of 10
+Spades of 2
+Heart of 6
+Heart of K
+Spades of 9
+Heart of Q
+Spades of K
+Spades of J
+Clubs of Ace
+
+My score is: 13 points.
+I win!!
+2018-05-07 04:28:05.721 hw05
+bash-3.2$ exit
+exit
+
+Script done on Mon May  7 04:28:08 2018
