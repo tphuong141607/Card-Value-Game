@@ -1,6 +1,8 @@
 # Card Value Game: Which hand has higher value? 
+
+The program was written in C++ language using QT platform. It was created on 4/2018.
+
 ## What is it?
-The program is written in C++ language using QT platform. 
 
 This Card Value game has 2 players -- the computer and the user. The program first asks the user to enter the number of cards that he/she wish to have for each hand. Then, it automatically displays all the cards and the total point for each hand. The winner is the one holds higher value cards.
 
